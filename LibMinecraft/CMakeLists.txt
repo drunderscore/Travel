@@ -37,8 +37,6 @@ add_library(Minecraft SHARED
 
         Net/Packets/Status/Clientbound/Response.cpp
 
-        Handshake/Serverbound/Handshake.h
-
         Status/Serverbound/Ping.h
         Status/Clientbound/Pong.h
 
