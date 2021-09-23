@@ -1,0 +1,8 @@
+{
+  "fields": [
+    {
+      "name": "reason",
+      "type": "Chat::Component"
+    }
+  ]
+}

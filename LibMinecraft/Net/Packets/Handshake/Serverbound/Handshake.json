@@ -1,0 +1,20 @@
+{
+  "fields": [
+    {
+      "name": "protocol_version",
+      "type": "VarInt"
+    },
+    {
+      "name": "server_address",
+      "type": "String"
+    },
+    {
+      "name": "server_port",
+      "type": "u16"
+    },
+    {
+      "name": "next_state",
+      "type": "VarInt"
+    }
+  ]
+}

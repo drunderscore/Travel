@@ -1,0 +1,12 @@
+{
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "UUID"
+    },
+    {
+      "name": "username",
+      "type": "String"
+    }
+  ]
+}
