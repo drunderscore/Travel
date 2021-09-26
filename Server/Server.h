@@ -11,6 +11,7 @@
 #include <LibCore/Object.h>
 #include <LibCore/TCPServer.h>
 #include <Server/Client.h>
+#include <Server/Scripting/Engine.h>
 
 class Server : public Core::Object
 {
@@ -24,7 +25,10 @@ public:
 
     void client_did_disconnect(Badge<Client>, Client&, Client::DisconnectReason);
 
+    void client_did_request_status(Badge<Client>, Client&);
+
 private:
+    OwnPtr<Scripting::Engine> m_engine;
     NonnullRefPtr<Core::TCPServer> m_server;
     NonnullOwnPtrVector<Client> m_clients;
     Core::EventLoop m_event_loop;

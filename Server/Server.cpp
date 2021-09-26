@@ -8,6 +8,8 @@
 
 Server::Server() : m_server(Core::TCPServer::construct())
 {
+    m_engine = make<Scripting::Engine>(*this);
+
     m_server->on_ready_to_accept = [this] {
         auto maybe_socket = m_server->accept();
         if (!maybe_socket)
@@ -36,3 +38,5 @@ void Server::client_did_disconnect(Badge<Client>, Client& who, Client::Disconnec
         m_clients.template remove_all_matching([&who](auto& client) { return client.ptr() == &who; });
     });
 }
+
+void Server::client_did_request_status(Badge<Client>, Client& who) { m_engine->client_did_request_status({}, who); }

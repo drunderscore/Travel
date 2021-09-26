@@ -121,18 +121,7 @@ void Client::handle_status_packet(Minecraft::Net::Packet::Id::Status::Serverboun
 
     if (id == Minecraft::Net::Packet::Id::Status::Serverbound::Request)
     {
-        auto description = create<Minecraft::Chat::TextComponent>("lol im server");
-        description->set_color(Minecraft::Chat::Component::NamedColor::Gold);
-        Minecraft::Net::Packets::Status::Clientbound::Response::Data data(description);
-        data.version.name = "1.17.1";
-        // FIXME: Remove this hardcoded protocol version for a constexpr one inside of server/client?
-        data.version.protocol = 756;
-
-        data.players.online = 13;
-        data.players.max = 37;
-
-        Minecraft::Net::Packets::Status::Clientbound::Response response(data);
-        send(response);
+        m_server.client_did_request_status({}, *this);
     }
     else if (id == Minecraft::Net::Packet::Id::Status::Serverbound::Ping)
     {

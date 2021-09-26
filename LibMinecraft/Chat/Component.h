@@ -76,6 +76,11 @@ public:
         return s_named_color_names_to_value.get(value);
     }
 
+    static String named_color_name_for_value(NamedColor color)
+    {
+        return s_named_color_names[static_cast<i32>(color)];
+    }
+
     static Result<NonnullRefPtr<Component>, String> parse_component_from_json(const JsonValue&);
 
 protected:
