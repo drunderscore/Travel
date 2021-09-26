@@ -121,15 +121,6 @@ void Engine::client_did_request_status(Badge<Server>, Client& who)
     who.send(response);
 }
 
-void* Engine::client_userdata(Client& client)
-{
-    auto client_ud = lua_newuserdata(m_state, sizeof(WeakPtr<Client>));
-    new (client_ud) WeakPtr<Client>(client);
-    luaL_getmetatable(m_state, "Server::Client");
-    lua_setmetatable(m_state, -2);
-    return client_ud;
-}
-
 void* Engine::timer_userdata(Core::Timer& timer) const
 {
     auto* timer_ud = lua_newuserdata(m_state, sizeof(WeakPtr<Core::Timer>));
