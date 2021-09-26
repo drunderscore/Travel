@@ -116,8 +116,6 @@ void Engine::client_did_request_status(Badge<Server>, Client& who)
 {
     UsingBaseTable base(*this);
     lua_getfield(m_state, -1, "onRequestStatus");
-    client_userdata(who);
-    lua_call(m_state, 1, 1);
     auto data = Types::status_request_response_data(m_state, lua_gettop(m_state));
     Minecraft::Net::Packets::Status::Clientbound::Response response(data);
     who.send(response);
