@@ -186,6 +186,7 @@ int main(int argc, char** argv)
     outln("#include <AK/MemoryStream.h>");
     outln("#include <LibMinecraft/Net/Packet.h>");
     outln("#include <LibMinecraft/Net/Types.h>");
+    outln("#include <LibMinecraft/Chat/Component.h>");
     outln();
     outln("// This was auto-generated from {}", lexical_path_to_input_file);
     outln("namespace Minecraft::Net::Packets::{}", packet_id_namespace);
