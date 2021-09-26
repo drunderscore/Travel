@@ -116,79 +116,73 @@ void Engine::client_did_request_status(Badge<Server>, Client& who)
 {
     UsingBaseTable base(*this);
     lua_getfield(m_state, -1, "onRequestStatus");
-    lua_call(m_state, 0, 1);
+    client_userdata(who);
+    lua_call(m_state, 1, 1);
     auto data = Types::status_request_response_data(m_state, lua_gettop(m_state));
     Minecraft::Net::Packets::Status::Clientbound::Response response(data);
     who.send(response);
 }
 
-void* Engine::timer_userdata(i32 id) const
+void* Engine::client_userdata(Client& client)
 {
-    auto* inventory_ud = lua_newuserdata(m_state, sizeof(id));
-    memcpy(inventory_ud, &id, sizeof(id));
+    auto client_ud = lua_newuserdata(m_state, sizeof(WeakPtr<Client>));
+    new (client_ud) WeakPtr<Client>(client);
+    luaL_getmetatable(m_state, "Server::Client");
+    lua_setmetatable(m_state, -2);
+    return client_ud;
+}
+
+void* Engine::timer_userdata(Core::Timer& timer) const
+{
+    auto* timer_ud = lua_newuserdata(m_state, sizeof(WeakPtr<Core::Timer>));
+    new (timer_ud) WeakPtr<Core::Timer>(timer);
     luaL_getmetatable(m_state, "Engine::Timer");
     lua_setmetatable(m_state, -2);
-    return inventory_ud;
+    return timer_ud;
 }
 
 void Engine::push_base_table() const { lua_rawgeti(m_state, LUA_REGISTRYINDEX, m_base_ref); }
 
 int Engine::timer_create()
 {
-    bool found_available_id = false;
-    i32 timer_id = 0;
-
-    for (auto i = 0; i < NumericLimits<i32>::max(); i++)
-    {
-        if (!m_timers.contains(i))
-        {
-            timer_id = i;
-            found_available_id = true;
-            break;
-        }
-    }
-
-    VERIFY(found_available_id);
-
     // Push first function argument to the top of the stack as required by luaL_ref
     lua_pushvalue(m_state, 1);
     auto function_ref = luaL_ref(m_state, LUA_REGISTRYINDEX);
     auto timer = Core::Timer::construct(luaL_checkinteger(m_state, 2), nullptr, nullptr);
 
-    timer->on_timeout = [this, timer_id, function_ref]() {
+    timer->on_timeout = [this, function_ref, timer]() mutable {
         lua_rawgeti(m_state, LUA_REGISTRYINDEX, function_ref);
         lua_call(m_state, 0, 1);
         if (lua_toboolean(m_state, -1))
         {
             luaL_unref(m_state, LUA_REGISTRYINDEX, function_ref);
 
-            auto timer = m_timers.get(timer_id);
-            VERIFY(timer.has_value());
-
-            timer.value()->stop();
-            m_timers.remove(timer_id);
+            timer->stop();
+            m_timers.remove_all_matching([timer](auto& other) { return timer.ptr() == other; });
         }
     };
 
-    m_timers.set(timer_id, timer);
+    m_timers.append(timer);
 
-    timer_userdata(timer_id);
+    timer_userdata(timer);
 
     return 1;
 }
 
 int Engine::timer_destroy()
 {
-    auto timer_id = *reinterpret_cast<i32*>(luaL_checkudata(m_state, 1, "Engine::Timer"));
-    lua_pushboolean(m_state, m_timers.remove(timer_id));
+    auto timer = reinterpret_cast<WeakPtr<Core::Timer>*>(luaL_checkudata(m_state, 1, "Engine::Timer"));
+    if (timer)
+        m_timers.remove_all_matching([timer](auto& other) { return timer->ptr() == other; });
 
-    return 1;
+    return 0;
 }
 
 int Engine::timer_invoke()
 {
-    auto timer = *m_timers.get(*reinterpret_cast<i32*>(luaL_checkudata(m_state, 1, "Engine::Timer")));
-    timer->on_timeout();
+    auto timer = reinterpret_cast<WeakPtr<Core::Timer>*>(luaL_checkudata(m_state, 1, "Engine::Timer"));
+    if (timer)
+        timer->ptr()->on_timeout();
 
     return 0;
 }

@@ -9,6 +9,7 @@
 #include <AK/Badge.h>
 #include <AK/HashMap.h>
 #include <AK/RefCounted.h>
+#include <AK/WeakPtr.h>
 #include <LibCore/Timer.h>
 #include <Server/Client.h>
 
@@ -35,10 +36,10 @@ private:
     static HashMap<lua_State*, Engine*> s_engines;
     lua_State* m_state;
     Server& m_server;
-    HashMap<i32, NonnullRefPtr<Core::Timer>> m_timers;
+    Vector<NonnullRefPtr<Core::Timer>> m_timers;
     int m_base_ref{};
 
-    void* timer_userdata(i32 id) const;
+    void* timer_userdata(Core::Timer&) const;
 
     ALWAYS_INLINE void push_base_table() const;
 
