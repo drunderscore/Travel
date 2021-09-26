@@ -18,19 +18,18 @@ local Hooks = require("Hooks")
 
 local Base = {}
 
-function Base.onRequestStatus()
-    return {description =
-{
-    text = "I am from ",
-    color = "yellow",
-    extra = {
-        {
-            text = "Lua!",
-            color = 0xff00ff,
-            italic = true
-        }
-    }
-}}
+function Base.onRequestStatus(client)
+    local event = {}
+    event.client = client
+    Hooks.publish("requestStatus", event)
+    return event.responseData or {description = {text = "A Minecraft Server"}}
+end
+
+function Base.onRequestLogin(client, username)
+    local event = {}
+    event.client = client
+    event.username = username
+    Hooks.publish("requestLogin", event)
 end
 
 return Base

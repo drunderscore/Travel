@@ -10,6 +10,7 @@
 #include <LibCore/EventLoop.h>
 #include <LibCore/Object.h>
 #include <LibCore/TCPServer.h>
+#include <LibMinecraft/Net/Packets/Login/Serverbound/LoginStart.h>
 #include <Server/Client.h>
 #include <Server/Scripting/Engine.h>
 
@@ -26,6 +27,8 @@ public:
     void client_did_disconnect(Badge<Client>, Client&, Client::DisconnectReason);
 
     void client_did_request_status(Badge<Client>, Client&);
+
+    void client_did_request_login(Badge<Client>, Client&, Minecraft::Net::Packets::Login::Serverbound::LoginStart&);
 
 private:
     OwnPtr<Scripting::Engine> m_engine;

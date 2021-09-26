@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
-#include <LibMinecraft/Chat/Component.h>
 #include <LibMinecraft/Net/Packets/Handshake/Serverbound/Handshake.h>
 #include <LibMinecraft/Net/Packets/Login/Clientbound/Disconnect.h>
 #include <LibMinecraft/Net/Packets/Status/Clientbound/Pong.h>
@@ -26,6 +25,27 @@ void Client::send(const Minecraft::Net::Packet& packet)
 
     Minecraft::Net::Types::write_leb_signed(m_output_stream, bytes.size());
     m_output_stream << bytes;
+}
+
+void Client::disconnect(Minecraft::Chat::Component& reason)
+{
+    if (m_current_state == State::Login)
+    {
+        Minecraft::Net::Packets::Login::Clientbound::Disconnect disconnect;
+        disconnect.set_reason(reason);
+        send(disconnect);
+    }
+    else if (m_current_state == State::Play)
+    {
+        // TODO: Support disconnects during Play state
+        VERIFY_NOT_REACHED();
+    }
+    else
+    {
+        // Cannot disconnect during this state.
+        VERIFY_NOT_REACHED();
+    }
+    m_server.client_did_disconnect({}, *this, DisconnectReason::DisconnectedByServer);
 }
 
 void Client::on_ready_to_read()
@@ -106,13 +126,14 @@ void Client::handle_handshake_packet(Minecraft::Net::Packet::Id::Handshake::Serv
 
 void Client::handle_login_packet(Minecraft::Net::Packet::Id::Login::Serverbound id, ByteBuffer& bytes)
 {
-    Minecraft::Net::Packets::Login::Clientbound::Disconnect disconnect;
-    auto disconnect_reason = create<Minecraft::Chat::TextComponent>("It works!");
-    disconnect_reason->set_color(Minecraft::Chat::Component::NamedColor::Green);
-    auto disconnect_reason_part = disconnect_reason->append<Minecraft::Chat::TextComponent>(" Good for you :^)");
-    disconnect_reason_part->set_color(Minecraft::Chat::Component::NamedColor::Yellow);
-    disconnect.set_reason(disconnect_reason);
-    send(disconnect);
+    InputMemoryStream stream(bytes);
+
+    if (id == Minecraft::Net::Packet::Id::Login::Serverbound::LoginStart)
+    {
+        auto login_start = Minecraft::Net::Packets::Login::Serverbound::LoginStart::from_bytes(stream);
+
+        m_server.client_did_request_login({}, *this, *login_start);
+    }
 }
 
 void Client::handle_status_packet(Minecraft::Net::Packet::Id::Status::Serverbound id, ByteBuffer& bytes)

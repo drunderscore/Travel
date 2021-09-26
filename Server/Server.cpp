@@ -40,3 +40,9 @@ void Server::client_did_disconnect(Badge<Client>, Client& who, Client::Disconnec
 }
 
 void Server::client_did_request_status(Badge<Client>, Client& who) { m_engine->client_did_request_status({}, who); }
+
+void Server::client_did_request_login(Badge<Client>, Client& who,
+                                      Minecraft::Net::Packets::Login::Serverbound::LoginStart& packet)
+{
+    m_engine->client_did_request_login({}, who, packet);
+}

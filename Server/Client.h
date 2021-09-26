@@ -9,6 +9,7 @@
 #include <AK/NonnullRefPtr.h>
 #include <LibCore/FileStream.h>
 #include <LibCore/TCPSocket.h>
+#include <LibMinecraft/Chat/Component.h>
 #include <LibMinecraft/Net/Packet.h>
 
 class Server;
@@ -18,7 +19,8 @@ class Client : public Weakable<Client>
 public:
     enum class DisconnectReason
     {
-        StreamErrored
+        StreamErrored,
+        DisconnectedByServer
     };
 
     enum class State
@@ -32,6 +34,8 @@ public:
     Client(NonnullRefPtr<Core::TCPSocket> socket, Server&);
 
     void send(const Minecraft::Net::Packet&);
+
+    void disconnect(Minecraft::Chat::Component& reason);
 
 private:
     void on_ready_to_read();

@@ -11,6 +11,7 @@
 #include <AK/RefCounted.h>
 #include <AK/WeakPtr.h>
 #include <LibCore/Timer.h>
+#include <LibMinecraft/Net/Packets/Login/Serverbound/LoginStart.h>
 #include <Server/Client.h>
 
 typedef struct lua_State lua_State;
@@ -32,12 +33,16 @@ public:
 
     void client_did_request_status(Badge<Server>, Client&);
 
+    void client_did_request_login(Badge<Server>, Client&, Minecraft::Net::Packets::Login::Serverbound::LoginStart&);
+
 private:
     static HashMap<lua_State*, Engine*> s_engines;
     lua_State* m_state;
     Server& m_server;
     Vector<NonnullRefPtr<Core::Timer>> m_timers;
     int m_base_ref{};
+
+    void* client_userdata(Client&);
 
     void* timer_userdata(Core::Timer&) const;
 
@@ -46,6 +51,9 @@ private:
     DEFINE_LUA_METHOD(at_panic);
 
     DEFINE_LUA_METHOD(format);
+
+    // Client
+    DEFINE_LUA_METHOD(client_disconnect);
 
     // Timer
     DEFINE_LUA_METHOD(timer_create);

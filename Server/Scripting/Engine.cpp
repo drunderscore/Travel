@@ -29,6 +29,16 @@ Engine::Engine(Server& server) : m_server(server)
     static const struct luaL_Reg timer_lib[] = {
         {"create", timer_create_thunk}, {"destroy", timer_destroy_thunk}, {"invoke", timer_invoke_thunk}, {}};
 
+    static const struct luaL_Reg client_lib[] = {{"disconnect", client_disconnect_thunk}, {}};
+
+    luaL_newmetatable(m_state, "Server::Client");
+    lua_pushstring(m_state, "__index");
+    lua_pushvalue(m_state, -2);
+    lua_settable(m_state, -3);
+
+    luaL_setfuncs(m_state, client_lib, 0);
+    lua_pop(m_state, 1);
+
     luaL_newmetatable(m_state, "Engine::Timer");
     lua_pushstring(m_state, "__index");
     lua_pushvalue(m_state, -2);
@@ -116,9 +126,30 @@ void Engine::client_did_request_status(Badge<Server>, Client& who)
 {
     UsingBaseTable base(*this);
     lua_getfield(m_state, -1, "onRequestStatus");
+    client_userdata(who);
+    lua_call(m_state, 1, 1);
     auto data = Types::status_request_response_data(m_state, lua_gettop(m_state));
     Minecraft::Net::Packets::Status::Clientbound::Response response(data);
     who.send(response);
+}
+
+void Engine::client_did_request_login(Badge<Server>, Client& who,
+                                      Minecraft::Net::Packets::Login::Serverbound::LoginStart& packet)
+{
+    UsingBaseTable base(*this);
+    lua_getfield(m_state, -1, "onRequestLogin");
+    client_userdata(who);
+    lua_pushstring(m_state, packet.username().characters());
+    lua_call(m_state, 2, 0);
+}
+
+void* Engine::client_userdata(Client& client)
+{
+    auto client_ud = lua_newuserdata(m_state, sizeof(WeakPtr<Client>));
+    new (client_ud) WeakPtr<Client>(client);
+    luaL_getmetatable(m_state, "Server::Client");
+    lua_setmetatable(m_state, -2);
+    return client_ud;
 }
 
 void* Engine::timer_userdata(Core::Timer& timer) const
@@ -128,6 +159,15 @@ void* Engine::timer_userdata(Core::Timer& timer) const
     luaL_getmetatable(m_state, "Engine::Timer");
     lua_setmetatable(m_state, -2);
     return timer_ud;
+}
+
+int Engine::client_disconnect()
+{
+    auto client = reinterpret_cast<WeakPtr<Client>*>(luaL_checkudata(m_state, 1, "Server::Client"));
+    if (client)
+        client->ptr()->disconnect(Types::chat_component(m_state, 2));
+
+    return 0;
 }
 
 void Engine::push_base_table() const { lua_rawgeti(m_state, LUA_REGISTRYINDEX, m_base_ref); }
