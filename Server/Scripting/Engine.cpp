@@ -52,7 +52,7 @@ Engine::Engine(Server& server) : m_server(server)
 
     m_base_ref = luaL_ref(m_state, LUA_REGISTRYINDEX);
 
-    constexpr StringView plugins_directory = "plugins";
+    constexpr StringView plugins_directory = "Plugins";
 
     if (Core::File::exists(plugins_directory) && Core::File::is_directory(plugins_directory))
     {
