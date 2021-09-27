@@ -1,11 +1,11 @@
 add_executable(Server
         Client.cpp
+        DestinationServer.cpp
         main.cpp
-        Server.cpp
-
         Scripting/Engine.cpp
         Scripting/Format.cpp
         Scripting/Types.cpp
+        Server.cpp
         )
 
 target_lagom(Server)

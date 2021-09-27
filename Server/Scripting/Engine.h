@@ -55,6 +55,10 @@ private:
     // Client
     DEFINE_LUA_METHOD(client_disconnect);
 
+    DEFINE_LUA_METHOD(client_send_message);
+
+    DEFINE_LUA_METHOD(client_set_player_list_header_and_footer);
+
     // Timer
     DEFINE_LUA_METHOD(timer_create);
 

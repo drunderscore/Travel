@@ -9,6 +9,8 @@
 #include <AK/JsonObject.h>
 #include <AK/LexicalPath.h>
 #include <LibCore/DirIterator.h>
+#include <LibMinecraft/Net/Packets/Play/Clientbound/ChatMessage.h>
+#include <LibMinecraft/Net/Packets/Play/Clientbound/PlayerListHeaderAndFooter.h>
 #include <Server/Scripting/Engine.h>
 #include <Server/Scripting/Format.h>
 #include <Server/Scripting/Lua.h>
@@ -29,7 +31,11 @@ Engine::Engine(Server& server) : m_server(server)
     static const struct luaL_Reg timer_lib[] = {
         {"create", timer_create_thunk}, {"destroy", timer_destroy_thunk}, {"invoke", timer_invoke_thunk}, {}};
 
-    static const struct luaL_Reg client_lib[] = {{"disconnect", client_disconnect_thunk}, {}};
+    static const struct luaL_Reg client_lib[] = {
+        {"disconnect", client_disconnect_thunk},
+        {"sendMessage", client_send_message_thunk},
+        {"setPlayerListHeaderAndFooter", client_set_player_list_header_and_footer_thunk},
+        {}};
 
     luaL_newmetatable(m_state, "Server::Client");
     lua_pushstring(m_state, "__index");
@@ -166,6 +172,50 @@ int Engine::client_disconnect()
     auto client = reinterpret_cast<WeakPtr<Client>*>(luaL_checkudata(m_state, 1, "Server::Client"));
     if (client)
         client->ptr()->disconnect(Types::chat_component(m_state, 2));
+
+    return 0;
+}
+
+int Engine::client_send_message()
+{
+    auto client = reinterpret_cast<WeakPtr<Client>*>(luaL_checkudata(m_state, 1, "Server::Client"));
+    if (client)
+    {
+        auto message = Types::chat_component(m_state, 2);
+        auto position = luaL_optinteger(m_state, 3, 0);
+        // TODO: Sender UUID
+        Minecraft::Net::Packets::Play::Clientbound::ChatMessage chat_message;
+        chat_message.set_message(message);
+        chat_message.set_position(position);
+        client->ptr()->send(chat_message);
+    }
+
+    return 0;
+}
+
+int Engine::client_set_player_list_header_and_footer()
+{
+    auto client = reinterpret_cast<WeakPtr<Client>*>(luaL_checkudata(m_state, 1, "Server::Client"));
+    if (client)
+    {
+        RefPtr<Minecraft::Chat::Component> header;
+        RefPtr<Minecraft::Chat::Component> footer;
+
+        if(lua_isnil(m_state, 2))
+            header = create<Minecraft::Chat::TextComponent>("");
+        else
+            header = Types::chat_component(m_state, 2);
+
+        if(lua_isnil(m_state, 3))
+            footer = create<Minecraft::Chat::TextComponent>("");
+        else
+            footer = Types::chat_component(m_state, 3);
+
+        Minecraft::Net::Packets::Play::Clientbound::PlayerListHeaderAndFooter player_list_header_and_footer;
+        player_list_header_and_footer.set_header(header);
+        player_list_header_and_footer.set_footer(footer);
+        client->ptr()->send(player_list_header_and_footer);
+    }
 
     return 0;
 }

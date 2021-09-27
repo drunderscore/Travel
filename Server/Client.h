@@ -11,6 +11,7 @@
 #include <LibCore/TCPSocket.h>
 #include <LibMinecraft/Chat/Component.h>
 #include <LibMinecraft/Net/Packet.h>
+#include <Server/DestinationServer.h>
 
 class Server;
 
@@ -35,6 +36,8 @@ public:
 
     void send(const Minecraft::Net::Packet&);
 
+    void forward_raw_bytes(Badge<DestinationServer>, ByteBuffer&);
+
     void disconnect(Minecraft::Chat::Component& reason);
 
 private:
@@ -50,4 +53,6 @@ private:
     Core::OutputFileStream m_output_stream;
     Core::InputFileStream m_input_stream;
     Server& m_server;
+
+    OwnPtr<DestinationServer> m_current_destination_server;
 };

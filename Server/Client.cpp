@@ -27,6 +27,8 @@ void Client::send(const Minecraft::Net::Packet& packet)
     m_output_stream << bytes;
 }
 
+void Client::forward_raw_bytes(Badge<DestinationServer>, ByteBuffer& bytes) { m_output_stream << bytes; }
+
 void Client::disconnect(Minecraft::Chat::Component& reason)
 {
     if (m_current_state == State::Login)
@@ -50,6 +52,13 @@ void Client::disconnect(Minecraft::Chat::Component& reason)
 
 void Client::on_ready_to_read()
 {
+    if (m_current_destination_server)
+    {
+        auto bytes = m_socket->read_all();
+        m_current_destination_server->forward_raw_bytes({}, bytes);
+        return;
+    }
+
     // FIXME: handle TCP disconnects
 
     // This includes the amount of bytes of the packet id varint
@@ -133,6 +142,9 @@ void Client::handle_login_packet(Minecraft::Net::Packet::Id::Login::Serverbound 
         auto login_start = Minecraft::Net::Packets::Login::Serverbound::LoginStart::from_bytes(stream);
 
         m_server.client_did_request_login({}, *this, *login_start);
+
+        m_current_destination_server = adopt_own(*new DestinationServer(
+            DestinationServer::Info({}, 25566, DestinationServer::Info::ConnectionMethod::Unencrypted), *this));
     }
 }
 
