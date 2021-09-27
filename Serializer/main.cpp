@@ -185,6 +185,7 @@ int main(int argc, char** argv)
     outln("#include <AK/LEB128.h>");
     outln("#include <AK/MemoryStream.h>");
     outln("#include <LibMinecraft/Net/Packet.h>");
+    outln("#include <LibMinecraft/UUID.h>");
     outln("#include <LibMinecraft/Net/Types.h>");
     outln("#include <LibMinecraft/Chat/Component.h>");
     outln();
