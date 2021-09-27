@@ -45,6 +45,9 @@ add_library(Minecraft SHARED
         Login/Serverbound/LoginStart.h
         Login/Clientbound/LoginSuccess.h
         Login/Clientbound/Disconnect.h
+
+        Play/Clientbound/ChatMessage.h
+        Play/Clientbound/PlayerListHeaderAndFooter.h
         )
 
 target_include_directories(Minecraft SYSTEM PRIVATE

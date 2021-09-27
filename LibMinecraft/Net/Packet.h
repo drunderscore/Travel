@@ -57,6 +57,8 @@ public:
         {
             enum class Clientbound
             {
+                ChatMessage = 0x0F,
+                PlayerListHeaderAndFooter = 0x5E
             };
 
             enum class Serverbound

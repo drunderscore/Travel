@@ -1,0 +1,16 @@
+{
+  "fields": [
+    {
+      "name": "message",
+      "type": "Chat::Component"
+    },
+    {
+      "name": "position",
+      "type": "u8"
+    },
+    {
+      "name": "sender",
+      "type": "UUID"
+    }
+  ]
+}

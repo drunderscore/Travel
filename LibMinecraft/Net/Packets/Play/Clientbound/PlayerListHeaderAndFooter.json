@@ -1,0 +1,12 @@
+{
+  "fields": [
+    {
+      "name": "header",
+      "type": "Chat::Component"
+    },
+    {
+      "name": "footer",
+      "type": "Chat::Component"
+    }
+  ]
+}
