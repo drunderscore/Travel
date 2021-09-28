@@ -53,6 +53,5 @@ void DestinationServer::on_connected()
 void DestinationServer::on_ready_to_read()
 {
     auto bytes = m_socket->read_all();
-    outln("Forwarding {} bytes", bytes.size());
     m_client.forward_raw_bytes({}, bytes);
 }
