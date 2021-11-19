@@ -48,6 +48,8 @@ add_library(Minecraft SHARED
 
         Play/Clientbound/ChatMessage.h
         Play/Clientbound/PlayerListHeaderAndFooter.h
+
+        NBT/Value.cpp
         )
 
 target_include_directories(Minecraft SYSTEM PRIVATE
