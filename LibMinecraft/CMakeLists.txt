@@ -50,6 +50,10 @@ add_library(Minecraft SHARED
         Play/Clientbound/PlayerListHeaderAndFooter.h
 
         NBT/Value.cpp
+
+        ResourceLocation.cpp
+        BlockState.cpp
+        SpongeSchematic.cpp
         )
 
 target_include_directories(Minecraft SYSTEM PRIVATE

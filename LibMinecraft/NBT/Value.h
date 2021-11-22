@@ -112,7 +112,7 @@ public:
 
         return it->value;
     }
-    
+
     static Result<Value, String> try_parse(InputStream&);
 
     enum class Type : i8
