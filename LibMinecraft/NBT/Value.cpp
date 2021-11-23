@@ -64,13 +64,13 @@ Value Value::read_value(Type tag, InputStream& stream)
             stream >> length;
 
             Vector<i8> values;
-            values.resize(length);
+            values.ensure_capacity(length);
             i8 individual_value;
 
             for (auto i = 0; i < length; i++)
             {
                 stream >> individual_value;
-                values[i] = individual_value;
+                values.unchecked_append(individual_value);
             }
 
             return values;
@@ -100,13 +100,13 @@ Value Value::read_value(Type tag, InputStream& stream)
             stream >> length;
 
             Vector<i32> values;
-            values.resize(length);
+            values.ensure_capacity(length);
             BigEndian<i32> individual_value;
 
             for (auto i = 0; i < length; i++)
             {
                 stream >> individual_value;
-                values[i] = individual_value;
+                values.unchecked_append(individual_value);
             }
 
             return values;
@@ -117,13 +117,13 @@ Value Value::read_value(Type tag, InputStream& stream)
             stream >> length;
 
             Vector<i64> values;
-            values.resize(length);
+            values.ensure_capacity(length);
             BigEndian<i64> individual_value;
 
             for (auto i = 0; i < length; i++)
             {
                 stream >> individual_value;
-                values[i] = individual_value;
+                values.unchecked_append(individual_value);
             }
 
             return values;
